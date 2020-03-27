@@ -8,6 +8,7 @@ public class BallMovement : MonoBehaviour
     public float angularSpeed = 1.0f;
     public float radius = 1;
     public GameObject player;
+    public int control;
     private float currentAngle = 270;
     private float minAngle = 0;
     private float maxAngle = 90;
@@ -23,11 +24,11 @@ public class BallMovement : MonoBehaviour
 
         /* Transforming angle in radians - easier to calculate trajectory */
         currentAngle = currentAngle * Mathf.PI / 180;
-        SetNewTarget();
+        SetNewTarget(true);
 
     }
 
-    public void SetNewTarget(){
+    public void SetNewTarget(bool first = false){
         float vSpwn = GameController.Instance.validSpawn[GameController.Instance.level];
         float vDist = GameController.Instance.validDistance[GameController.Instance.level];
         float eulerAngle = (currentAngle * 180 / Mathf.PI) % 360;
@@ -35,7 +36,7 @@ public class BallMovement : MonoBehaviour
         /*
          * Always generate minimum angle between 0 and 360 - distance between max and min
          */
-        minAngle = (eulerAngle + vSpwn + Random.Range(0,25)) % 360;
+        minAngle = (eulerAngle + vSpwn + Random.Range(0,25) + (first? 25 * control:0)) % 360 ;
         if(minAngle + vDist > 360){
             minAngle -= vDist;
         }
@@ -88,7 +89,7 @@ public class BallMovement : MonoBehaviour
             GameController.Instance.Fail();
             SetNewTarget();
         }
-        if(Input.GetButtonDown("Fire1")){
+        if(Input.GetButtonDown("Fire" + control)){
             Debug.Log(minAngle + " < " + eulerAngle + " < " + maxAngle);
             // Changes direction before verifying scoring requirements
             clockwise = !clockwise;
@@ -98,7 +99,7 @@ public class BallMovement : MonoBehaviour
                 SetNewTarget();
             }
             else{
-                GameController.Instance.Fail();
+                GameController.Instance.Fail(true);
                 SetNewTarget();
             }
         }
